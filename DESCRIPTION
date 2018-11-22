@@ -1,11 +1,11 @@
 Package: WEStblr
-Title: What the Package Does (One Line, Title Case)
+Title: An R package for creating WES-style formatted excel tables
 Version: 0.0.0.9000
 Authors@R: 
-    c(person(given = "First",
-             family = "Last",
+    c(person(given = "Stephanie",
+             family = "Yurchak",
              role = c("aut", "cre"),
-             email = "first.last@example.com"),
+             email = "Stephanie.Yurchak@gov.bc.ca"),
       person(given = "Province of British Columbia",
              role = "cph"))
 Description: What the package does (one paragraph).
