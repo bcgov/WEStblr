@@ -1,16 +1,4 @@
----
-output:
-  md_document:
-    variant: markdown_github
----
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "README-"
-)
-```
 <a id="devex-badge" rel="Exploration" href="https://github.com/BCDevExchange/assets/blob/master/README.md"><img alt="Being designed and built, but in the lab. May change, disappear, or be buggy." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/exploration.svg" title="Being designed and built, but in the lab. May change, disappear, or be buggy." /></a>
 <!-- Add a project state badge
 See https://github.com/BCDevExchange/Our-Project-Docs/blob/master/discussion/projectstates.md
@@ -18,7 +6,7 @@ If you have bcgovr installed and you use RStudio, click the 'Insert BCDevex Badg
 
 # WEStblr
 
-Description of package
+An R package for creating WES-style formatted excel tables. Full description to come...
 
 ### Features
 
@@ -35,6 +23,8 @@ This is a basic example which shows you how to solve a common problem:
 ```
 
 ### Project Status
+
+Exploration (i.e., in development)
 
 ### Getting Help or Reporting an Issue
 
