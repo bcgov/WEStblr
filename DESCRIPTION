@@ -18,3 +18,5 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://github.com/bcgov/WEStblr
+BugReports: https://github.com/bcgov/WEStblr/issues
