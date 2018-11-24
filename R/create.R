@@ -1,5 +1,10 @@
-
-create_responserate_tab <- function(x, outputFile, inputFile=NULL, sheetName="Response Rates") {
+#' Create a formatted excel response rate sheet from tabulated data.
+#'
+#' @param x A data.frame
+#' @param outputFile The path to the output file.
+#' @param inputFile The path to the input file if one exists. For example to append sheet to a readme.xlsx file. If NULL, a new workbook will be created.
+#' @param sheetName A character string with the sheet name. The default is "Response Rates".
+create_responserate_sheet <- function(x, outputFile, inputFile=NULL, sheetName="Response Rates") {
 
   # create or load workbook
   if(is.null(inputFile)){
@@ -56,7 +61,7 @@ create_responserate_tab <- function(x, outputFile, inputFile=NULL, sheetName="Re
 
 }
 
-create_driverscore_tab <- function(x, outputFile, inputFile=outputFile, sheetName="Engagement Model"){
+create_driverscore_sheet <- function(x, outputFile, inputFile=outputFile, sheetName="Engagement Model"){
 
   # load or create workbook
   ## likely loading existing file, so try load first
@@ -130,7 +135,7 @@ create_driverscore_tab <- function(x, outputFile, inputFile=outputFile, sheetNam
 
 }
 
-create_questionscores_tab <- function(x, outputFile, inputFile=outputFile, sheetName="All Survey Topics"){
+create_questionscores_sheet <- function(x, outputFile, inputFile=outputFile, sheetName="All Survey Topics"){
 
   # load or create workbook
   ## likely loading existing file, so try load first
