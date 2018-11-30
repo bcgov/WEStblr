@@ -17,12 +17,13 @@ RoxygenNote: 6.1.1
 Imports:
     dplyr,
     purrr,
+    stringr,
     tidyr,
     xlsx
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr
 URL: https://github.com/bcgov/WEStblr
 BugReports: https://github.com/bcgov/WEStblr/issues
-
