@@ -8,10 +8,10 @@
 #'
 #' @importFrom magrittr %>%
 log_responserate_data <- function(x, outputFile="Response_Log.csv", responseFlag="QCOMP", reportID, reportTitle, userList=NULL, demogRollUp=NULL) {
-  # note to self: still need to add in demographic
+  # note to self: reportTitle not used for Demographic reporting. Set to NULL? Add check of equal length?
 
   # ungroup, as using add=TRUE for grouping to enable org demographic reporting (needs 3 grouping variables)
-  x <- x %>% ungroup()
+  x <- x %>% dplyr::ungroup()
 
   calculate_rr <- function(x2,reportID,reportTitle) {
     x2 %>%
@@ -21,7 +21,7 @@ log_responserate_data <- function(x, outputFile="Response_Log.csv", responseFlag
     dplyr::group_by(reportID,reportTitle,add=TRUE) %>%
     dplyr::summarize(Responses=sum(responseFlag,na.rm=TRUE),
                      Population=n()) %>%
-    dplyr::mutate(RR=Responses/Population)
+    dplyr::mutate(RR=Responses*100/Population)
   }
 
   filter_reportGroup <- function(reportID, reportTitle, telkeys) {
