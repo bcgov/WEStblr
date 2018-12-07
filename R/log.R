@@ -106,8 +106,16 @@ log_questionscore_data <- function(x, reportID, reportTitle, questions=WESquesti
 
   }
 
+  if(length(reportID) == 1) {
 
-  scores_data <- calculate_scores(x,reportID,reportTitle)
+    scores_data <- calculate_scores(x,reportID,reportTitle)
+
+  } else {
+
+    scores_data <-  purrr::map2_dfr(reportID, reportTitle, calculate_scores, x2=x) %>%
+      dplyr::filter(!(is.na(reportID) | reportID=="")) %>%
+      dplyr::arrange(reportID)
+  }
 
   write.csv(scores_data,outputFile,row.names = FALSE)
 }
@@ -134,7 +142,18 @@ log_driverscore_data <- function(x, reportID, reportTitle, questions=WESquestion
       dplyr::left_join(rbind(unique(questions[c("MODEL_LINKAGE","Driver_ID")]),c("Engagement","dr_00")),by=c("Drivers"="MODEL_LINKAGE"))
   }
 
-  driver_data <- calculate_drivers(x,reportID,reportTitle)
+
+  if(length(reportID) == 1) {
+
+    driver_data <- calculate_drivers(x,reportID,reportTitle)
+
+  } else {
+
+    driver_data <-  purrr::map2_dfr(reportID, reportTitle, calculate_drivers, x2=x) %>%
+      dplyr::filter(!(is.na(reportID) | reportID=="")) %>%
+      dplyr::arrange(reportID)
+  }
+
 
   write.csv(driver_data,outputFile,row.names = FALSE)
 
