@@ -7,7 +7,7 @@
 #' @param reportTitle A character vector containing the column names in x containing the report titles (e.g., Organization, LEVEL1, etc.).
 #'
 #' @importFrom magrittr %>%
-log_responserate_data <- function(x, outputFile="Response_Log.csv", responseFlag="QCOMP", reportID, reportTitle, userList=NULL, demogRollUp=NULL) {
+log_responserate_data <- function(x, reportID, reportTitle, responseFlag="QCOMP", outputFile="Response_Log.csv", userList=NULL, demogRollUp=NULL) {
   # note to self: reportTitle not used for Demographic reporting. Set to NULL? Add check of equal length?
 
   # ungroup, as using add=TRUE for grouping to enable org demographic reporting (needs 3 grouping variables)
@@ -67,5 +67,75 @@ log_responserate_data <- function(x, outputFile="Response_Log.csv", responseFlag
   }
 
   write.csv(rr_data, outputFile, row.names = FALSE)
+
+}
+
+
+log_questionscore_data <- function(x, reportID, reportTitle, questions=WESquestions18, outputFile="Scores_Log.csv", userList=NULL, demogRollUp=NULL) {
+
+
+  qscores <- paste0(questions$Q_COLUMN,"S")
+  qcats <- paste0(questions$Q_COLUMN,"_3cat")
+
+  calculate_scores <- function(x2,reportID,reportTitle) {
+
+    s1 <- x2 %>%
+      dplyr::rename_(reportID=reportID,
+                     reportTitle=reportTitle) %>%
+      dplyr::select(reportID,reportTitle,qscores) %>%
+      dplyr::group_by(reportID,reportTitle,add=TRUE) %>%
+      dplyr::summarize_all(dplyr::funs(mean), na.rm=TRUE) %>%
+      tidyr::gather("Question","Score",-c("reportID","reportTitle")) %>%
+      dplyr::mutate(Question=gsub("S","",Question),Rounded=rounded(Score)) %>%
+      dplyr::arrange(reportID)
+
+    s2 <- x2 %>%
+      dplyr::rename_(reportID=reportID,
+                     reportTitle=reportTitle) %>%
+      dplyr::select(reportID,reportTitle,qcats) %>%
+      dplyr::group_by(reportID,reportTitle,add=TRUE) %>%
+      tidyr::gather("Question","Category",-c("reportID","reportTitle")) %>%
+      dplyr::filter(!is.na(Category)) %>%
+      dplyr::group_by(Question,add=TRUE) %>%
+      dplyr::summarize(Disagree=sum(Category==1)*100/n(), Neutral=sum(Category==2)*100/n(), Agree=sum(Category==3)*100/n()) %>%
+      dplyr::mutate(Question=gsub("_3cat","",Question)) %>%
+      dplyr::arrange(reportID)
+
+    dplyr::left_join(s1,s2,by=c("reportID","reportTitle","Question")) %>%
+      dplyr::left_join(questions[!(colnames(questions) %in% c("Q_ID"))],by=c("Question"="Q_COLUMN"))
+
+  }
+
+
+  scores_data <- calculate_scores(x,reportID,reportTitle)
+
+  write.csv(scores_data,outputFile,row.names = FALSE)
+}
+
+
+log_driverscore_data <- function(x, reportID, reportTitle, questions=WESquestions18, outputFile="Drivers_Log.csv", userList=NULL, demogRollUp=NULL) {
+
+  drivers <- questions %>%
+    dplyr::select(MODEL_LINKAGE) %>%
+    dplyr::filter(MODEL_LINKAGE!="") %>%
+    dplyr::pull() %>%
+    unique()
+
+  calculate_drivers <- function(x2,reportID,reportTitle) {
+    x2 %>%
+      dplyr::rename_(reportID=reportID,
+                     reportTitle=reportTitle) %>%
+      dplyr::select(reportID,reportTitle,drivers,Engagement) %>%
+      dplyr::group_by(reportID,reportTitle,add=TRUE) %>%
+      dplyr::summarize_all(dplyr::funs(mean), na.rm=TRUE) %>%
+      tidyr::gather("Drivers","Scores",-c("reportID","reportTitle")) %>%
+      dplyr::mutate(Rounded=rounded(Scores)) %>%
+      dplyr::arrange(reportID) %>%
+      dplyr::left_join(rbind(unique(questions[c("MODEL_LINKAGE","Driver_ID")]),c("Engagement","dr_00")),by=c("Drivers"="MODEL_LINKAGE"))
+  }
+
+  driver_data <- calculate_drivers(x,reportID,reportTitle)
+
+  write.csv(driver_data,outputFile,row.names = FALSE)
 
 }

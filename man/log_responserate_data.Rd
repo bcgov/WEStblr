@@ -4,19 +4,20 @@
 \alias{log_responserate_data}
 \title{Calculates response rates and logs to a csv file.}
 \usage{
-log_responserate_data(x, outputFile = "Response_Log.csv",
-  responseFlag = "QCOMP", reportID, reportTitle)
+log_responserate_data(x, reportID, reportTitle, responseFlag = "QCOMP",
+  outputFile = "Response_Log.csv", userList = NULL,
+  demogRollUp = NULL)
 }
 \arguments{
 \item{x}{A data.frame}
 
-\item{outputFile}{The path to the output file.}
-
-\item{responseFlag}{A character string of the column in data flagging completions.}
-
 \item{reportID}{A character vector containing the column names in x containing the reporting IDs (e.g., ORGID, LEVEL1_ID, etc.)}
 
 \item{reportTitle}{A character vector containing the column names in x containing the report titles (e.g., Organization, LEVEL1, etc.).}
+
+\item{responseFlag}{A character string of the column in data flagging completions.}
+
+\item{outputFile}{The path to the output file.}
 }
 \description{
 Calculates response rates and logs to a csv file.
