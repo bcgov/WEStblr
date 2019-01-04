@@ -95,6 +95,96 @@ tabulate_responserate_demogdata <- function(x, reportID, demogRollup, responseFl
 }
 
 
+#' Tabulates driver/engagement scores and logs to a csv file.
+#'
+#' @param x A data.frame
+#' @param reportID A character vector containing the column names in x containing the reporting IDs (e.g., ORGID, LEVEL1_ID, etc.)
+#' @param reportTitle A character vector containing the column names in x containing the report titles (e.g., Organization, LEVEL1, etc.).
+#' @param questions A data.frame containing the questions used in the survey. Default is the questions file from WES 2018. See WESquestions18 for reference.
+#' @param outputFile The path to the output file. Default is "Driver_Log.csv"
+#' @return A data.frame with tabulated response rates
+#' @examples
+#' tabulate_driverscore_data(data,reportID="ID",reportTitle = "Title",outputFile="BCPS_Driver_Log.csv")
+#'
+#' @importFrom magrittr %>%
+tabulate_driverscore_data <- function(x, reportID, reportTitle, questions=WESquestions18, outputFile="Drivers_Log.csv", userList=NULL) {
+
+  drivers <- questions %>%
+    dplyr::select(MODEL_LINKAGE) %>%
+    dplyr::filter(MODEL_LINKAGE!="") %>%
+    dplyr::pull() %>%
+    unique()
+
+  calculate_drivers <- function(x2,reportID,reportTitle) {
+    x2 %>%
+      dplyr::rename_(reportID=reportID,
+                     reportTitle=reportTitle) %>%
+      dplyr::select(reportID,reportTitle,drivers,Engagement) %>%
+      dplyr::group_by(reportID,reportTitle,add=TRUE) %>%
+      dplyr::summarize_all(dplyr::funs(mean), na.rm=TRUE) %>%
+      tidyr::gather("Drivers","Scores",-c("reportID","reportTitle")) %>%
+      dplyr::mutate(Rounded=rounded(Scores)) %>%
+      dplyr::left_join(rbind(unique(questions[c("MODEL_LINKAGE","Driver_ID")]),c("Engagement","dr_00")),by=c("Drivers"="MODEL_LINKAGE")) %>%
+      dplyr::arrange(reportID,Driver_ID)
+  }
+
+
+  if(length(reportID) == 1) {
+
+    driver_data <- calculate_drivers(x,reportID,reportTitle)
+
+  } else { # rollup
+
+    driver_data <-  purrr::map2_dfr(reportID, reportTitle, calculate_drivers, x2=x) %>%
+      dplyr::filter(!(is.na(reportID) | reportID=="")) %>%
+      dplyr::arrange(reportID,Driver_ID)
+  }
+
+
+  write.csv(driver_data,outputFile,row.names = FALSE)
+  driver_data
+
+}
+
+#' Tabulates driver/engagement scores and logs to a csv file - for demographic breakdowns.
+#'
+#' @param x A data.frame
+#' @param reportID A character vector containing the column names in x containing the reporting IDs (e.g., ORGID, LEVEL1_ID, etc.)
+#' @param demogRollup A data.frame containing the demographic groupings to be reported. See WESdemogRollup18, or WESOrgdemogRollup18 for reference. Must include the columns reportID, Demographic, Group, Demographic_in_data, Group_in_data and Sort.
+#' @param questions A data.frame containing the questions used in the survey. Default is the questions file from WES 2018. See WESquestions18 for reference.
+#' @param outputFile The path to the output file. Default is "Driver_Log.csv"
+#' @return A data.frame with tabulated response rates
+#' @examples
+#' tabulate_driverscore_demogdata(data, reportID="ORGID18", demogRollup = demog_rollup_org)
+#'
+#' @importFrom magrittr %>%
+tabulate_driverscore_demogdata <- function(x, reportID, demogRollup, questions=WESquestions18, outputFile="Drivers_Log.csv") {
+
+  drivers <- questions %>%
+    dplyr::select(MODEL_LINKAGE) %>%
+    dplyr::filter(MODEL_LINKAGE!="") %>%
+    dplyr::pull() %>%
+    unique()
+
+  driver_data <- x %>%
+    dplyr::rename_(reportID=reportID) %>%
+    dplyr::select(reportID, drivers, Engagement, unique(demogRollup$Demographic_in_data)) %>%
+    tidyr::gather("Demographic_in_data", "Group_in_data", unique(demogRollup$Demographic_in_data)) %>%
+    dplyr::left_join(demogRollup, by=c("reportID", "Demographic_in_data", "Group_in_data")) %>%
+    dplyr::filter(!is.na(Group)) %>%
+    dplyr::select(-Demographic_in_data,-Group_in_data) %>%
+    dplyr::group_by(reportID, Demographic, Group, Sort) %>%
+    dplyr::summarize_all(dplyr::funs(mean), na.rm=TRUE) %>%
+    tidyr::gather("Drivers","Scores",-c("reportID","Demographic","Group","Sort")) %>%
+    dplyr::mutate(Rounded=rounded(Scores)) %>%
+    dplyr::left_join(rbind(unique(questions[c("MODEL_LINKAGE","Driver_ID")]),c("Engagement","dr_00")),by=c("Drivers"="MODEL_LINKAGE")) %>%
+    dplyr::arrange(reportID,Sort,Driver_ID)
+
+  write.csv(driver_data,outputFile,row.names = FALSE)
+  driver_data
+
+}
+
 
 #' Tabulates question scores and logs to a csv file.
 #'
@@ -212,92 +302,3 @@ tabulate_questionscore_demogdata <- function(x, reportID, demogRollup, questions
 
 }
 
-#' Tabulates driver/engagement scores and logs to a csv file - for demographic breakdowns.
-#'
-#' @param x A data.frame
-#' @param reportID A character vector containing the column names in x containing the reporting IDs (e.g., ORGID, LEVEL1_ID, etc.)
-#' @param demogRollup A data.frame containing the demographic groupings to be reported. See WESdemogRollup18, or WESOrgdemogRollup18 for reference. Must include the columns reportID, Demographic, Group, Demographic_in_data, Group_in_data and Sort.
-#' @param questions A data.frame containing the questions used in the survey. Default is the questions file from WES 2018. See WESquestions18 for reference.
-#' @param outputFile The path to the output file. Default is "Driver_Log.csv"
-#' @return A data.frame with tabulated response rates
-#' @examples
-#' tabulate_driverscore_demogdata(data, reportID="ORGID18", demogRollup = demog_rollup_org)
-#'
-#' @importFrom magrittr %>%
-tabulate_driverscore_data <- function(x, reportID, reportTitle, questions=WESquestions18, outputFile="Drivers_Log.csv", userList=NULL) {
-
-  drivers <- questions %>%
-    dplyr::select(MODEL_LINKAGE) %>%
-    dplyr::filter(MODEL_LINKAGE!="") %>%
-    dplyr::pull() %>%
-    unique()
-
-  calculate_drivers <- function(x2,reportID,reportTitle) {
-    x2 %>%
-      dplyr::rename_(reportID=reportID,
-                     reportTitle=reportTitle) %>%
-      dplyr::select(reportID,reportTitle,drivers,Engagement) %>%
-      dplyr::group_by(reportID,reportTitle,add=TRUE) %>%
-      dplyr::summarize_all(dplyr::funs(mean), na.rm=TRUE) %>%
-      tidyr::gather("Drivers","Scores",-c("reportID","reportTitle")) %>%
-      dplyr::mutate(Rounded=rounded(Scores)) %>%
-      dplyr::arrange(reportID) %>%
-      dplyr::left_join(rbind(unique(questions[c("MODEL_LINKAGE","Driver_ID")]),c("Engagement","dr_00")),by=c("Drivers"="MODEL_LINKAGE"))
-  }
-
-
-  if(length(reportID) == 1) {
-
-    driver_data <- calculate_drivers(x,reportID,reportTitle)
-
-  } else { # rollup
-
-    driver_data <-  purrr::map2_dfr(reportID, reportTitle, calculate_drivers, x2=x) %>%
-      dplyr::filter(!(is.na(reportID) | reportID=="")) %>%
-      dplyr::arrange(reportID)
-  }
-
-
-  write.csv(driver_data,outputFile,row.names = FALSE)
-  driver_data
-
-}
-
-#' Tabulates driver/engagement scores and logs to a csv file.
-#'
-#' @param x A data.frame
-#' @param reportID A character vector containing the column names in x containing the reporting IDs (e.g., ORGID, LEVEL1_ID, etc.)
-#' @param reportTitle A character vector containing the column names in x containing the report titles (e.g., Organization, LEVEL1, etc.).
-#' @param questions A data.frame containing the questions used in the survey. Default is the questions file from WES 2018. See WESquestions18 for reference.
-#' @param outputFile The path to the output file. Default is "Driver_Log.csv"
-#' @return A data.frame with tabulated response rates
-#' @examples
-#' tabulate_driverscore_data(data,reportID="ID",reportTitle = "Title",outputFile="BCPS_Driver_Log.csv")
-#'
-#' @importFrom magrittr %>%
-tabulate_driverscore_demogdata <- function(x, reportID, demogRollup, questions=WESquestions18, outputFile="Drivers_Log.csv") {
-
-  drivers <- questions %>%
-    dplyr::select(MODEL_LINKAGE) %>%
-    dplyr::filter(MODEL_LINKAGE!="") %>%
-    dplyr::pull() %>%
-    unique()
-
-  driver_data <- x %>%
-    dplyr::rename_(reportID=reportID) %>%
-    dplyr::select(reportID, drivers, Engagement, unique(demogRollup$Demographic_in_data)) %>%
-    tidyr::gather("Demographic_in_data", "Group_in_data", unique(demogRollup$Demographic_in_data)) %>%
-    dplyr::left_join(demogRollup, by=c("reportID", "Demographic_in_data", "Group_in_data")) %>%
-    dplyr::filter(!is.na(Group)) %>%
-    dplyr::select(-Demographic_in_data,-Group_in_data) %>%
-    dplyr::group_by(reportID, Demographic, Group, Sort) %>%
-    dplyr::summarize_all(dplyr::funs(mean), na.rm=TRUE) %>%
-    tidyr::gather("Drivers","Scores",-c("reportID","Demographic","Group","Sort")) %>%
-    dplyr::mutate(Rounded=rounded(Scores)) %>%
-    dplyr::left_join(rbind(unique(questions[c("MODEL_LINKAGE","Driver_ID")]),c("Engagement","dr_00")),by=c("Drivers"="MODEL_LINKAGE")) %>%
-    dplyr::arrange(reportID,Sort,Driver_ID)
-
-  write.csv(driver_data,outputFile,row.names = FALSE)
-  driver_data
-
-}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tabulate.R
 \name{tabulate_driverscore_data}
 \alias{tabulate_driverscore_data}
-\title{Tabulates driver/engagement scores and logs to a csv file - for demographic breakdowns.}
+\title{Tabulates driver/engagement scores and logs to a csv file.}
 \usage{
 tabulate_driverscore_data(x, reportID, reportTitle,
   questions = WESquestions18, outputFile = "Drivers_Log.csv",
@@ -13,19 +13,19 @@ tabulate_driverscore_data(x, reportID, reportTitle,
 
 \item{reportID}{A character vector containing the column names in x containing the reporting IDs (e.g., ORGID, LEVEL1_ID, etc.)}
 
+\item{reportTitle}{A character vector containing the column names in x containing the report titles (e.g., Organization, LEVEL1, etc.).}
+
 \item{questions}{A data.frame containing the questions used in the survey. Default is the questions file from WES 2018. See WESquestions18 for reference.}
 
 \item{outputFile}{The path to the output file. Default is "Driver_Log.csv"}
-
-\item{demogRollup}{A data.frame containing the demographic groupings to be reported. See WESdemogRollup18, or WESOrgdemogRollup18 for reference. Must include the columns reportID, Demographic, Group, Demographic_in_data, Group_in_data and Sort.}
 }
 \value{
 A data.frame with tabulated response rates
 }
 \description{
-Tabulates driver/engagement scores and logs to a csv file - for demographic breakdowns.
+Tabulates driver/engagement scores and logs to a csv file.
 }
 \examples{
-tabulate_driverscore_demogdata(data, reportID="ORGID18", demogRollup = demog_rollup_org)
+tabulate_driverscore_data(data,reportID="ID",reportTitle = "Title",outputFile="BCPS_Driver_Log.csv")
 
 }

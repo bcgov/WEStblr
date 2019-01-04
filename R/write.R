@@ -15,7 +15,7 @@ write_responserate_sheet <- function(x, outputFile, inputFile=NULL, sheetName="R
     ## remove existing sheet, sheetName, if applicable
     existing <- xlsx::getSheets(outwb)
     if(sheetName %in% names(existing)) {
-      removeSheet(outwb,sheetName=sheetName)
+      xlsx::removeSheet(outwb,sheetName=sheetName)
     }
   }
 
@@ -71,7 +71,7 @@ write_driverscore_sheet <- function(x, outputFile, inputFile=outputFile, sheetNa
   existing <- xlsx::getSheets(outwb)
   if(!is.null(existing)){
     if(sheetName %in% names(existing)) {
-      removeSheet(outwb,sheetName=sheetName)
+      xlsx::removeSheet(outwb,sheetName=sheetName)
     }
   }
 
@@ -135,7 +135,7 @@ write_driverscore_sheet <- function(x, outputFile, inputFile=outputFile, sheetNa
 
 }
 
-write_questionscores_sheet <- function(x, outputFile, inputFile=outputFile, sheetName="All Survey Topics"){
+write_questionscore_sheet <- function(x, outputFile, inputFile=outputFile, sheetName="All Survey Topics"){
 
   # load or create workbook
   ## likely loading existing file, so try load first
@@ -145,7 +145,7 @@ write_questionscores_sheet <- function(x, outputFile, inputFile=outputFile, shee
   existing <- xlsx::getSheets(outwb)
   if(!is.null(existing)){
     if(sheetName %in% names(existing)) {
-      removeSheet(outwb,sheetName=sheetName)
+      xlsx::removeSheet(outwb,sheetName=sheetName)
     }
   }
 
